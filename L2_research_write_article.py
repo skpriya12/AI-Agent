@@ -1,54 +1,13 @@
-#!/usr/bin/env python
-# coding: utf-8
 
-# You can download the `requirements.txt` for this course from the workspace of this lab. `File --> Open...`
-
-# # L2: Create Agents to Research and Write an Article
-# 
-# In this lesson, you will be introduced to the foundational concepts of multi-agent systems and get an overview of the crewAI framework.
-
-# The libraries are already installed in the classroom. If you're running this notebook on your own machine, you can install the following:
-# ```Python
 # !pip install crewai==0.28.8 crewai_tools==0.1.6 langchain_community==0.0.29
-# ```
-
-# In[2]:
-
 
 # Warning control
 import warnings
 warnings.filterwarnings('ignore')
 
-
 # - Import from the crewAI libray.
-
-# In[3]:
-
-
 from crewai import Agent, Task, Crew
 
-
-# - As a LLM for your agents, you'll be using OpenAI's `gpt-3.5-turbo`.
-# 
-# **Optional Note:** crewAI also allow other popular models to be used as a LLM for your Agents. You can see some of the examples at the [bottom of the notebook](#1).
-
-# In[4]:
-
-# import os
-# from langchain_community.llms import HuggingFaceEndpoint
-# 
-# # Get API key from environment variable
-# api_key = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-# 
-# # Ensure the API key is set
-# if api_key is None:
-#     raise ValueError("Hugging Face API token is missing. Set HUGGINGFACEHUB_API_TOKEN as an environment variable.")
-# 
-# # Initialize the model using HuggingFaceEndpoint
-# llm = HuggingFaceEndpoint(
-#     endpoint_url="https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
-#     huggingfacehub_api_token=api_key,
-# )
 import os
 from langchain_community.llms import HuggingFaceHub
 api_key = os.getenv("HUGGINGFACEHUB_API_TOKEN")
@@ -79,10 +38,6 @@ llm = HuggingFaceHub(
 #           """
 # ```
 # is that it can avoid adding those whitespaces and newline characters, making it better formatted to be passed to the LLM.
-
-# In[5]:
-
-
 planner = Agent(
     role="Content Planner",
     goal="Plan engaging and factually accurate content on {topic}",
@@ -98,12 +53,7 @@ planner = Agent(
 	verbose=True
 )
 
-
 # ### Agent: Writer
-
-# In[6]:
-
-
 writer = Agent(
     role="Content Writer",
     goal="Write insightful and factually accurate "
@@ -127,12 +77,7 @@ writer = Agent(
     verbose=True
 )
 
-
 # ### Agent: Editor
-
-# In[7]:
-
-
 editor = Agent(
     role="Editor",
     goal="Edit a given blog post to align with "
@@ -150,16 +95,11 @@ editor = Agent(
     verbose=True
 )
 
-
 # ## Creating Tasks
 # 
 # - Define your Tasks, and provide them a `description`, `expected_output` and `agent`.
 
 # ### Task: Plan
-
-# In[8]:
-
-
 plan = Task(
     description=(
         "1. Prioritize the latest trends, key players, "
@@ -176,12 +116,7 @@ plan = Task(
     agent=planner
 )
 
-
 # ### Task: Write
-
-# In[9]:
-
-
 write = Task(
     description=(
         "1. Use the content plan to craft a compelling "
@@ -201,12 +136,7 @@ write = Task(
     agent=writer,
 )
 
-
 # ### Task: Edit
-
-# In[10]:
-
-
 edit = Task(
     description=("Proofread the given blog post for "
                  "grammatical errors and "
@@ -217,108 +147,25 @@ edit = Task(
     agent=editor
 )
 
-
 # ## Creating the Crew
 # 
 # - Create your crew of Agents
 # - Pass the tasks to be performed by those agents.
 #     - **Note**: *For this simple example*, the tasks will be performed sequentially (i.e they are dependent on each other), so the _order_ of the task in the list _matters_.
 # - `verbose=2` allows you to see all the logs of the execution. 
-
-# In[11]:
-
-
 crew = Crew(
     agents=[planner, writer, editor],
     tasks=[plan, write, edit],
     function_calling_llm=llm,
     verbose=2
 )
-#help(Crew)
-print(crew)
+
 # ## Running the Crew
-
-# **Note**: LLMs can provide different outputs for they same input, so what you get might be different than what you see in the video.
-
-# In[12]:
-
-#crew.config(llm=llm)
-
 result = crew.kickoff(inputs={"topic": "Artificial Intelligence"})
 
-
 # - Display the results of your execution as markdown in the notebook.
-
-# In[13]:
-
-
 from IPython.display import Markdown
 Markdown(result)
-
-
-# ## Try it Yourself
-# 
-# - Pass in a topic of your choice and see what the agents come up with!
-
-
-
-# In[16]:
-
-
-#Markdown(result)
-
-
-# <a name='1'></a>
-#  ## Other Popular Models as LLM for your Agents
-
-# #### Hugging Face (HuggingFaceHub endpoint)
-# 
-# ```Python
-# from langchain_community.llms import HuggingFaceHub
-# 
-# llm = HuggingFaceHub(
-#     repo_id="HuggingFaceH4/zephyr-7b-beta",
-#     huggingfacehub_api_token="<HF_TOKEN_HERE>",
-#     task="text-generation",
-# )
-# 
-# ### you will pass "llm" to your agent function
-# ```
-
-# #### Mistral API
-# 
-# ```Python
-# OPENAI_API_KEY=your-mistral-api-key
-# OPENAI_API_BASE=https://api.mistral.ai/v1
-# OPENAI_MODEL_NAME="mistral-small"
-# ```
-
-# #### Cohere
-# 
-# ```Python
-# from langchain_community.chat_models import ChatCohere
-# # Initialize language model
-# os.environ["COHERE_API_KEY"] = "your-cohere-api-key"
-# llm = ChatCohere()
-# 
-# ### you will pass "llm" to your agent function
-# ```
-
-# ### For using Llama locally with Ollama and more, checkout the crewAI documentation on [Connecting to any LLM](https://docs.crewai.com/how-to/LLM-Connections/).
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
 
 
 
